@@ -36,9 +36,9 @@ export default function StudentTable({ students }: Props) {
         router.push(pathName);
     };
 
-    const onClickDelete = (_id: string) => {
+    const onClickDelete = (_id: string, name: string) => {
         handleOpenDelete();
-        router.push(`${pathName}?_id=${_id}`);
+        router.push(`${pathName}?_id=${_id}&name=${name}`);
     };
 
     const onClickUpdate = (_id: string) => {
@@ -100,7 +100,9 @@ export default function StudentTable({ students }: Props) {
                                     <Button
                                         variant="contained"
                                         color="error"
-                                        onClick={() => onClickDelete(student?._id)}
+                                        onClick={() =>
+                                            onClickDelete(student?._id, student?.name)
+                                        }
                                     >
                                         delete
                                     </Button>

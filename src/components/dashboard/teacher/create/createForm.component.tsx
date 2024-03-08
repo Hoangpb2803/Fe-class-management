@@ -4,10 +4,10 @@ import * as React from "react";
 import { Box, Button, MenuItem, Stack, TextField } from "@mui/material";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { testCache } from "@/app/dashboard/student/page";
 import "react-toastify/dist/ReactToastify.css";
 import createAction from "@/actions/create.action";
 import { teacherSchema } from "@/validation/teacher.validation";
+import { getAllCache } from "@/caches/getAll.cache";
 
 interface IMajor {
     _id: string;
@@ -34,7 +34,7 @@ export default function CreateTeacherForm({ handleClose }: { handleClose: () => 
 
     React.useEffect(() => {
         const fetchCache = async () => {
-            const res = await testCache();
+            const res = await getAllCache("major");
             if (res.data) setMajors(res.data);
         };
 
@@ -115,89 +115,97 @@ export default function CreateTeacherForm({ handleClose }: { handleClose: () => 
 
     return (
         <form action={onSubmit}>
-            <Stack direction={"row"} spacing={2}>
-                <Box width={"50%"}>
-                    <TextField
-                        name="name"
-                        label="Name"
-                        fullWidth
-                        value={formState.name}
-                        margin="normal"
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.name ? true : false}
-                        helperText={errors.name}
-                    />
-                    <TextField
-                        label="Date of birth"
-                        type="date"
-                        name="dateOfBirth"
-                        value={formState.dateOfBirth}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.dateOfBirth ? true : false}
-                        helperText={errors.dateOfBirth}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        fullWidth
-                        margin="normal"
-                    />
+            <Stack spacing={2}>
+                <Stack direction={"row"} spacing={2}>
+                    <Box width={"50%"}>
+                        <TextField
+                            name="name"
+                            label="Name"
+                            fullWidth
+                            value={formState.name}
+                            margin="normal"
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.name ? true : false}
+                            helperText={errors.name}
+                        />
+                        <TextField
+                            label="Date of birth"
+                            type="date"
+                            name="dateOfBirth"
+                            value={formState.dateOfBirth}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.dateOfBirth ? true : false}
+                            helperText={errors.dateOfBirth}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            fullWidth
+                            margin="normal"
+                        />
 
-                    <TextField
-                        name="exp"
-                        label="Experience"
-                        type="number"
-                        fullWidth
-                        margin="normal"
-                        value={formState.exp}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.exp ? true : false}
-                        helperText={errors.exp}
-                    />
-                </Box>
-                <Box width={"50%"}>
-                    <TextField
-                        name="major"
-                        label="Major"
-                        select
-                        fullWidth
-                        margin="normal"
-                        value={formState.major}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.major ? true : false}
-                        helperText={errors.major}
-                    >
-                        {majors.map((major) => (
-                            <MenuItem key={major?._id} value={major?._id}>
-                                {major?.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                        <TextField
+                            name="exp"
+                            label="Experience"
+                            type="number"
+                            fullWidth
+                            margin="normal"
+                            value={formState.exp}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.exp ? true : false}
+                            helperText={errors.exp}
+                        />
+                    </Box>
+                    <Box width={"50%"}>
+                        <TextField
+                            name="major"
+                            label="Major"
+                            select
+                            fullWidth
+                            margin="normal"
+                            value={formState.major}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.major ? true : false}
+                            helperText={errors.major}
+                        >
+                            {majors.map((major) => (
+                                <MenuItem key={major?._id} value={major?._id}>
+                                    {major?.name}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
-                    <TextField
-                        label="Email"
-                        type="text"
-                        name="email"
-                        value={formState.email}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.email ? true : false}
-                        helperText={errors.email}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        fullWidth
-                        margin="normal"
-                    />
-                </Box>
+                        <TextField
+                            label="Email"
+                            type="text"
+                            name="email"
+                            value={formState.email}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.email ? true : false}
+                            helperText={errors.email}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            fullWidth
+                            margin="normal"
+                        />
+                    </Box>
+                </Stack>
+
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    size="large"
+                >
+                    Create Teacher
+                </Button>
             </Stack>
-
-            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                Create Student
-            </Button>
         </form>
     );
 }

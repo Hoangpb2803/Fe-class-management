@@ -1,21 +1,9 @@
 import deleteAction from "@/actions/delete.action";
+import { modalStyle } from "@/styles/modal.style";
 import { Box, Button, Modal, Stack, Typography } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { toast } from "react-toastify";
-
-const style = {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "1px solid #000",
-    borderRadius: "5px",
-    boxShadow: 24,
-    p: 4,
-};
 
 interface IProps {
     open: boolean;
@@ -46,17 +34,16 @@ export default function DeleteStudentModal({ open, handleClose }: IProps) {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
         >
-            <Box sx={style}>
-                <Stack spacing={3}>
+            <Box sx={{ ...modalStyle, width: 500 }}>
+                <Stack spacing={4}>
                     <Typography
                         id="modal-modal-title"
-                        variant="h6"
+                        variant="h5"
                         component="h2"
+                        textAlign={"center"}
                         color={"red"}
                     >
-                        <span>Do you want to delete student</span>
-                        <br />
-                        <span>{name} ?</span>
+                        Do you want to delete student {`"${name}"`} ?
                     </Typography>
                     <Stack direction={"row"} spacing={2} justifyContent={"flex-end"}>
                         <Button variant="contained" color="primary" onClick={handleClose}>

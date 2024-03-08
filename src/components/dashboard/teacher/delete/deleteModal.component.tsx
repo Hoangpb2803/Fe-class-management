@@ -26,6 +26,7 @@ interface IProps {
 export default function DeleteTeacherModal({ open, handleClose }: IProps) {
     const searchParams = useSearchParams();
     const _id = searchParams.get("_id");
+    const name = searchParams.get("name");
 
     const onClickDelete = async () => {
         if (_id) {
@@ -47,16 +48,15 @@ export default function DeleteTeacherModal({ open, handleClose }: IProps) {
             aria-describedby="modal-modal-description"
         >
             <Box sx={style}>
-                <Stack spacing={3}>
+                <Stack spacing={4}>
                     <Typography
                         id="modal-modal-title"
-                        variant="h6"
+                        variant="h5"
                         component="h2"
+                        textAlign={"center"}
                         color={"red"}
                     >
-                        <span>Do you want to delete teacher</span>
-                        <br />
-                        <span>alo ?</span>
+                        Do you want to delete teacher {`"${name}"`} ?
                     </Typography>
                     <Stack direction={"row"} spacing={2} justifyContent={"flex-end"}>
                         <Button variant="contained" color="primary" onClick={handleClose}>

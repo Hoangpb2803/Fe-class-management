@@ -7,18 +7,8 @@ import Fade from "@mui/material/Fade";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CreateStudentForm from "./createForm.component";
-
-const style = {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    bgcolor: "background.paper",
-    border: "1px solid #000",
-    borderRadius: "5px",
-    boxShadow: 24,
-    p: 4,
-};
+import { Stack } from "@mui/material";
+import { modalStyle } from "@/styles/modal.style";
 
 export default function CreateStudentModal() {
     const [open, setOpen] = React.useState(false);
@@ -50,16 +40,18 @@ export default function CreateStudentModal() {
                 }}
             >
                 <Fade in={open}>
-                    <Box sx={style}>
-                        <Typography
-                            id="transition-modal-title"
-                            variant="h6"
-                            component="h2"
-                        >
-                            Create student form
-                        </Typography>
+                    <Box sx={modalStyle}>
+                        <Stack spacing={2} alignItems={"center"}>
+                            <Typography
+                                id="transition-modal-title"
+                                variant="h5"
+                                component="h2"
+                            >
+                                Create student form
+                            </Typography>
 
-                        <CreateStudentForm handleClose={handleClose} />
+                            <CreateStudentForm handleClose={handleClose} />
+                        </Stack>
                     </Box>
                 </Fade>
             </Modal>

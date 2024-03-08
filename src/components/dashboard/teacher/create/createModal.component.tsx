@@ -7,6 +7,7 @@ import Fade from "@mui/material/Fade";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CreateTeacherForm from "./createForm.component";
+import { Stack } from "@mui/material";
 
 const style = {
     position: "absolute" as "absolute",
@@ -51,15 +52,17 @@ export default function CreateTeacherModal() {
             >
                 <Fade in={open}>
                     <Box sx={style}>
-                        <Typography
-                            id="transition-modal-title"
-                            variant="h6"
-                            component="h2"
-                        >
-                            Create student form
-                        </Typography>
+                        <Stack alignItems={"center"} spacing={2}>
+                            <Typography
+                                id="transition-modal-title"
+                                variant="h5"
+                                component="h2"
+                            >
+                                Create student form
+                            </Typography>
 
-                        <CreateTeacherForm handleClose={handleClose} />
+                            <CreateTeacherForm handleClose={handleClose} />
+                        </Stack>
                     </Box>
                 </Fade>
             </Modal>

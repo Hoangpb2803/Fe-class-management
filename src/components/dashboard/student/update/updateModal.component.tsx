@@ -4,6 +4,7 @@ import updateAction from "@/actions/update.action";
 import { getAllCache } from "@/caches/getAll.cache";
 import { getDetailCache } from "@/caches/getDetail.cache";
 import { levels } from "@/constants/fixedValue.constant";
+import { modalStyle } from "@/styles/modal.style";
 import { IMajor } from "@/types/major.interface";
 import { studentSchema } from "@/validation/student.validation";
 import {
@@ -19,19 +20,6 @@ import { format } from "date-fns";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { toast } from "react-toastify";
-
-const style = {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 500,
-    bgcolor: "background.paper",
-    border: "1px solid #000",
-    borderRadius: "5px",
-    boxShadow: 24,
-    p: 4,
-};
 
 interface IProps {
     open: boolean;
@@ -160,7 +148,7 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
         >
-            <Box sx={style}>
+            <Box sx={modalStyle}>
                 <form action={onClickUpdate}>
                     <Stack spacing={3} alignItems={"center"}>
                         <Typography
@@ -258,7 +246,12 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
                             </Box>
                         </Stack>
 
-                        <Stack direction={"row"} spacing={2} justifyContent={"flex-end"}>
+                        <Stack
+                            width={"100%"}
+                            direction={"row"}
+                            spacing={2}
+                            justifyContent={"flex-end"}
+                        >
                             <Button
                                 variant="contained"
                                 color="primary"

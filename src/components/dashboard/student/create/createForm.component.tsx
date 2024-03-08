@@ -4,13 +4,13 @@ import * as React from "react";
 import { Box, Button, MenuItem, Stack, TextField } from "@mui/material";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { testCache } from "@/app/dashboard/student/page";
 import { levels } from "@/constants/fixedValue.constant";
 import { IMajor } from "@/types/major.interface";
 import createAction from "@/actions/create.action";
 
 import "react-toastify/dist/ReactToastify.css";
 import { studentSchema } from "@/validation/student.validation";
+import { getAllCache } from "@/caches/getAll.cache";
 
 export default function CreateStudentForm({ handleClose }: { handleClose: () => void }) {
     const [majors, setMajors] = React.useState<IMajor[]>([]);
@@ -32,7 +32,7 @@ export default function CreateStudentForm({ handleClose }: { handleClose: () => 
 
     React.useEffect(() => {
         const fetchCache = async () => {
-            const res = await testCache();
+            const res = await getAllCache("major");
             if (res.data) setMajors(res.data);
         };
 
@@ -107,95 +107,103 @@ export default function CreateStudentForm({ handleClose }: { handleClose: () => 
 
     return (
         <form action={onSubmit}>
-            <Stack direction={"row"} spacing={2}>
-                <Box width={"50%"}>
-                    <TextField
-                        name="name"
-                        label="Name"
-                        fullWidth
-                        value={formState.name}
-                        margin="normal"
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.name ? true : false}
-                        helperText={errors.name}
-                    />
-                    <TextField
-                        label="Date of birth"
-                        type="date"
-                        name="dateOfBirth"
-                        value={formState.dateOfBirth}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.dateOfBirth ? true : false}
-                        helperText={errors.dateOfBirth}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        fullWidth
-                        margin="normal"
-                    />
+            <Stack spacing={2}>
+                <Stack direction={"row"} spacing={2}>
+                    <Box width={"50%"}>
+                        <TextField
+                            name="name"
+                            label="Name"
+                            fullWidth
+                            value={formState.name}
+                            margin="normal"
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.name ? true : false}
+                            helperText={errors.name}
+                        />
+                        <TextField
+                            label="Date of birth"
+                            type="date"
+                            name="dateOfBirth"
+                            value={formState.dateOfBirth}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.dateOfBirth ? true : false}
+                            helperText={errors.dateOfBirth}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            fullWidth
+                            margin="normal"
+                        />
 
-                    <TextField
-                        name="level"
-                        label="Level"
-                        select
-                        fullWidth
-                        margin="normal"
-                        value={formState.level}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.level ? true : false}
-                        helperText={errors.level}
-                    >
-                        {levels.map((option) => (
-                            <MenuItem key={option} value={option}>
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Box>
-                <Box width={"50%"}>
-                    <TextField
-                        name="major"
-                        label="Major"
-                        select
-                        fullWidth
-                        margin="normal"
-                        value={formState.major}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.major ? true : false}
-                        helperText={errors.major}
-                    >
-                        {majors.map((major) => (
-                            <MenuItem key={major?._id} value={major?._id}>
-                                {major?.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                        <TextField
+                            name="level"
+                            label="Level"
+                            select
+                            fullWidth
+                            margin="normal"
+                            value={formState.level}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.level ? true : false}
+                            helperText={errors.level}
+                        >
+                            {levels.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                    <Box width={"50%"}>
+                        <TextField
+                            name="major"
+                            label="Major"
+                            select
+                            fullWidth
+                            margin="normal"
+                            value={formState.major}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.major ? true : false}
+                            helperText={errors.major}
+                        >
+                            {majors.map((major) => (
+                                <MenuItem key={major?._id} value={major?._id}>
+                                    {major?.name}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
-                    <TextField
-                        label="Email"
-                        type="text"
-                        name="email"
-                        value={formState.email}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        error={errors.email ? true : false}
-                        helperText={errors.email}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        fullWidth
-                        margin="normal"
-                    />
-                </Box>
+                        <TextField
+                            label="Email"
+                            type="text"
+                            name="email"
+                            value={formState.email}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                            error={errors.email ? true : false}
+                            helperText={errors.email}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            fullWidth
+                            margin="normal"
+                        />
+                    </Box>
+                </Stack>
+
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    size="large"
+                >
+                    Create Student
+                </Button>
             </Stack>
-
-            <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                Create Student
-            </Button>
         </form>
     );
 }
