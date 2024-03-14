@@ -4,8 +4,11 @@ import updateAction from "@/actions/update.action";
 import { getAllCache } from "@/caches/getAll.cache";
 import { getDetailCache } from "@/caches/getDetail.cache";
 import { levels } from "@/constants/fixedValue.constant";
+import { updateStudent } from "@/redux/slices/student.slice";
+import { RootState } from "@/redux/store";
 import { modalStyle } from "@/styles/modal.style";
 import { IMajor } from "@/types/major.interface";
+import { IStudent } from "@/types/student.interface";
 import { studentSchema } from "@/validation/student.validation";
 import {
     Box,
@@ -17,8 +20,10 @@ import {
     Typography,
 } from "@mui/material";
 import { format } from "date-fns";
+import { revalidateTag } from "next/cache";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 interface IProps {
@@ -30,8 +35,7 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
     const searchParams = useSearchParams();
     const _id = searchParams.get("_id");
 
-    const [majors, setMajors] = React.useState<IMajor[]>([]);
-
+    const [name, setName] = React.useState("");
     const [formState, setFormState] = React.useState({
         name: "",
         dateOfBirth: "",
@@ -48,45 +52,43 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
         email: "",
     });
 
+    const dispatch = useDispatch();
+
+    const majors = useSelector((state: RootState) => state.major.majors) as IMajor[];
+
+    const students = useSelector(
+        (state: RootState) => state.student.students
+    ) as IStudent[];
+
     React.useEffect(() => {
-        const fetchCache = async () => {
-            const res = await getAllCache("major");
-            if (res.data) setMajors(res.data);
-        };
-
-        fetchCache();
-    }, []);
-
-    React.useEffect(() => {
-        const teacherDetail = async () => {
-            if (_id) {
-                const res = await getDetailCache("student", _id);
-                const student = res.data;
-
-                if (student) {
-                    setFormState({
-                        ...student,
-                        dateOfBirth: format(new Date(student.dateOfBirth), "yyyy-MM-dd"),
-                    });
-                }
+        if (_id) {
+            const student = students.find((student) => student._id === _id);
+            if (student) {
+                setName(student.name);
+                setFormState({
+                    ...student,
+                    dateOfBirth: format(new Date(student.dateOfBirth), "yyyy-MM-dd"),
+                    major: student.major._id,
+                });
             }
-        };
-
-        teacherDetail();
-    }, [_id]);
+        }
+    }, [_id, students]);
 
     const onBlur = (
         e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
     ) => {
         const { name, value } = e.target;
 
+        // handle validate bu zod
         const validatedFields = studentSchema.safeParse({
             [name]: name === "dateOfBirth" ? new Date(value) : value,
         });
 
         if (!validatedFields.success) {
+            // get error from zod
             const zodErrors = validatedFields.error.flatten().fieldErrors;
             const fieldErrors = zodErrors[name as keyof typeof zodErrors];
+
             setErrors({
                 ...errors,
                 [name]: fieldErrors && fieldErrors[0],
@@ -117,6 +119,7 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
             email: formData.get("email"),
         };
 
+        // handle validate by zod
         const validatedFields = studentSchema.safeParse(data);
 
         if (!validatedFields.success) {
@@ -129,9 +132,10 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
                 email: zodErrors.email ? zodErrors.email[0] : "",
             });
         } else {
-            const res = await updateAction("student", _id, data);
-            if (res.status) {
+            const res = await updateAction<IStudent>("student", _id, data);
+            if (res.status && res.data) {
                 toast.success("Student has been successfully updated!");
+                dispatch(updateStudent({ ...res.data }));
                 handleClose();
             } else {
                 Array.isArray(res.message)
@@ -157,7 +161,7 @@ export default function UpdateStudentModal({ open, handleClose }: IProps) {
                             component="h2"
                             color={"CaptionText"}
                         >
-                            Update <strong>{formState.name}</strong> infomation
+                            Update <strong>{name}</strong> infomation
                         </Typography>
 
                         <Stack direction={"row"} spacing={2}>

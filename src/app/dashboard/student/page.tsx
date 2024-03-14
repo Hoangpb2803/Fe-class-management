@@ -1,16 +1,11 @@
 "use server";
 
-import { GetAll } from "@/apis/read.api";
 import CreateStudentModal from "@/components/dashboard/student/create/createModal.component";
+import SearchStudent from "@/components/dashboard/student/search.component";
 import StudentTable from "@/components/dashboard/student/studentTable.component";
-import { IStudent } from "@/types/student.interface";
-import { Box, Stack, TextField, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 
 export default async function StudentPage() {
-    let students: IStudent[] = [];
-    const res = await GetAll("student");
-    if (res.data) students = res.data;
-
     return (
         <Stack spacing={4}>
             <Typography
@@ -23,16 +18,11 @@ export default async function StudentPage() {
                 Student List
             </Typography>
             <Box display={"flex"} justifyContent={"space-between"} p={2}>
-                <TextField
-                    name="seach"
-                    label="Search name"
-                    variant="outlined"
-                    sx={{ width: "40%" }}
-                />
+                <SearchStudent />
 
                 <CreateStudentModal />
             </Box>
-            <StudentTable students={students} />
+            <StudentTable />
         </Stack>
     );
 }

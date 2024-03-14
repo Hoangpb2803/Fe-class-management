@@ -1,19 +1,9 @@
 "use server";
 
-import { GetAll } from "@/apis/read.api";
 import CreateTeacherModal from "@/components/dashboard/teacher/create/createModal.component";
 import TeacherTable from "@/components/dashboard/teacher/teacherTable.component";
-import { ITeacher } from "@/types/teacher.interface";
 import { Box, Stack, TextField, Typography } from "@mui/material";
-import { revalidateTag } from "next/cache";
-
 export default async function TeacherPage() {
-    let teachers: ITeacher[] = [];
-    const res = await GetAll("teacher");
-    if (res.data) teachers = res.data;
-
-    revalidateTag("teacher");
-
     return (
         <Stack spacing={4}>
             <Typography
@@ -35,7 +25,7 @@ export default async function TeacherPage() {
 
                 <CreateTeacherModal />
             </Box>
-            <TeacherTable teachers={teachers} />
+            <TeacherTable />
         </Stack>
     );
 }

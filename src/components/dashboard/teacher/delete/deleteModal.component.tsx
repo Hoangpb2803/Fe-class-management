@@ -1,8 +1,10 @@
 import deleteAction from "@/actions/delete.action";
+import { deleteTeacher } from "@/redux/slices/teacher.slice";
 import { ITeacher } from "@/types/teacher.interface";
 import { Box, Button, Modal, Stack, Typography } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
+import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
 const style = {
@@ -28,12 +30,15 @@ export default function DeleteTeacherModal({ open, handleClose }: IProps) {
     const _id = searchParams.get("_id");
     const name = searchParams.get("name");
 
+    const dispatch = useDispatch();
+
     const onClickDelete = async () => {
         if (_id) {
             const res = await deleteAction("teacher", _id);
             handleClose();
             if (res.status) {
                 toast.success("Teacher has been successfully deleted!");
+                dispatch(deleteTeacher(_id));
             } else {
                 toast.error("Something went wrong!");
             }

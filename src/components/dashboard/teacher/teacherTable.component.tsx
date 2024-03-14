@@ -2,49 +2,124 @@
 
 import { TypographyTableHead } from "@/components/mui/typography.component";
 import { ITeacher } from "@/types/teacher.interface";
-import { Button } from "@mui/material";
+import { Button, TablePagination } from "@mui/material";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { format } from "date-fns";
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import DeleteTeacherModal from "./delete/deleteModal.component";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import UpdateTeacherModal from "./update/updateModal.component";
+import { useDispatch, useSelector } from "react-redux";
+import { getPaginationCache } from "@/caches/getPagination";
+import { setTeacher } from "@/redux/slices/teacher.slice";
+import { getAllCache } from "@/caches/getAll.cache";
+import { RootState } from "@/redux/store";
+import { IUrlParams } from "@/types/urlParam.interface";
 
-interface Props {
-    teachers: ITeacher[];
-}
-
-export default function TeacherTable({ teachers }: Props) {
+export default function TeacherTable() {
     const router = useRouter();
     const pathName = usePathname();
+    const searchParams = useSearchParams();
+    const page = searchParams.get("page");
 
     const [openDelete, setOpenDelete] = React.useState(false);
     const [openUpdate, setOpenUpdate] = React.useState(false);
 
+    const [numberTeacher, setNumberTeacher] = useState<number>(0);
+    const [currPage, setCurrPage] = useState<number>(0);
+
+    const dispatch = useDispatch();
+    const teachers = useSelector(
+        (state: RootState) => state.teacher.teachers
+    ) as ITeacher[];
+
+    const isChange = useSelector(
+        (state: RootState) => state.teacher.isChangeStudentsNumber
+    ) as boolean;
+
+    const params = useMemo(() => {
+        return new URLSearchParams(searchParams);
+    }, [searchParams]);
+
+    const updateUrlParams = useCallback(
+        (newParams: IUrlParams[]) => {
+            // delete all params
+            while (params.keys().next().done === false) {
+                params.delete(params.keys().next().value);
+            }
+            // set new params
+            newParams.forEach((param) => params.set(param.key, param.value));
+            router.push(`${pathName}?${params.toString()}`);
+        },
+        [params, pathName, router]
+    );
+
+    useEffect(() => {
+        const teacherFetch = async () => {
+            const res = await getAllCache("teacher");
+            if (res.data) setNumberTeacher(res.data);
+        };
+
+        teacherFetch();
+    }, [isChange]);
+
+    useEffect(() => {
+        const getCurrTeacher = async () => {
+            if (page && !isNaN(Number(page))) {
+                const res = await getPaginationCache("teacher", Number(page));
+                if (res.data[0]) {
+                    dispatch(setTeacher(res.data));
+                    setCurrPage(Number(page) - 1);
+                } else {
+                    setCurrPage(0);
+                    updateUrlParams([{ key: "page", value: "1" }]);
+                }
+            } else {
+                const res = await getPaginationCache("teacher", 1);
+                if (res.data) {
+                    dispatch(setTeacher(res.data));
+                }
+            }
+        };
+        getCurrTeacher();
+    }, [page, dispatch, updateUrlParams]);
+
     const handleOpenDelete = () => setOpenDelete(true);
     const handleCloseDelete = () => {
         setOpenDelete(false);
-        router.push(pathName);
+        updateUrlParams([{ key: "page", value: String(currPage + 1) }]);
     };
 
     const handleOpenUpdate = () => setOpenUpdate(true);
     const handleCloseUpdate = () => {
         setOpenUpdate(false);
-        router.push(pathName);
+        updateUrlParams([{ key: "page", value: String(currPage + 1) }]);
+    };
+
+    const onChangePage = (newPage: number) => {
+        setCurrPage(newPage);
+        updateUrlParams([{ key: "page", value: String(newPage + 1) }]);
     };
 
     const onClickDelete = (_id: string, name: string) => {
         handleOpenDelete();
-        router.push(`${pathName}?_id=${_id}&name=${name}`);
+        updateUrlParams([
+            { key: "page", value: String(currPage + 1) },
+            { key: "_id", value: _id },
+            { key: "name", value: name },
+        ]);
     };
 
     const onClickUpdate = (_id: string) => {
         handleOpenUpdate();
-        router.push(`${pathName}?_id=${_id}`);
+        updateUrlParams([
+            { key: "page", value: String(currPage + 1) },
+            { key: "_id", value: _id },
+        ]);
     };
 
     return (
@@ -117,6 +192,14 @@ export default function TeacherTable({ teachers }: Props) {
                     })}
                 </TableBody>
             </Table>
+            <TablePagination
+                rowsPerPageOptions={[5]}
+                component="div"
+                count={numberTeacher}
+                rowsPerPage={5}
+                page={currPage}
+                onPageChange={(e, newPage) => onChangePage(newPage)}
+            />
             <DeleteTeacherModal open={openDelete} handleClose={handleCloseDelete} />
             <UpdateTeacherModal open={openUpdate} handleClose={handleCloseUpdate} />
         </>

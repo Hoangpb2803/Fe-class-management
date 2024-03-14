@@ -6,14 +6,15 @@ import { format } from "date-fns";
 import { toast } from "react-toastify";
 import { levels } from "@/constants/fixedValue.constant";
 import { IMajor } from "@/types/major.interface";
-import createAction from "@/actions/create.action";
-
-import "react-toastify/dist/ReactToastify.css";
 import { studentSchema } from "@/validation/student.validation";
-import { getAllCache } from "@/caches/getAll.cache";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import createAction from "@/actions/create.action";
+import "react-toastify/dist/ReactToastify.css";
+import { pushStudent } from "@/redux/slices/student.slice";
+import { IStudent } from "@/types/student.interface";
 
 export default function CreateStudentForm({ handleClose }: { handleClose: () => void }) {
-    const [majors, setMajors] = React.useState<IMajor[]>([]);
     const [formState, setFormState] = React.useState({
         name: "",
         dateOfBirth: format(new Date(2000, 2, 28), "yyyy-MM-dd"),
@@ -30,14 +31,9 @@ export default function CreateStudentForm({ handleClose }: { handleClose: () => 
         email: "",
     });
 
-    React.useEffect(() => {
-        const fetchCache = async () => {
-            const res = await getAllCache("major");
-            if (res.data) setMajors(res.data);
-        };
+    const dispatch = useDispatch();
 
-        fetchCache();
-    }, []);
+    const majors = useSelector((state: RootState) => state.major.majors) as IMajor[];
 
     const onBlur = (
         e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
@@ -93,9 +89,10 @@ export default function CreateStudentForm({ handleClose }: { handleClose: () => 
                 email: zodErrors.email ? zodErrors.email[0] : "",
             });
         } else {
-            const res = await createAction("student", data);
-            if (res.status) {
+            const res = await createAction<IStudent>("student", data);
+            if (res.status && res.data) {
                 toast.success("Creating new student successfully!");
+                dispatch(pushStudent(res.data));
                 handleClose();
             } else {
                 Array.isArray(res.message)

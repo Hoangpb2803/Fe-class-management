@@ -1,16 +1,13 @@
 'use server'
 
 import { Create } from "@/apis/create.api"
-interface IResponse {
-    status: boolean,
-    message?: string[] | string
-}
+import { IResponse } from "@/types/response.interface"
 
-export default async function createAction(path: string, data: any): Promise<IResponse> {
+export default async function createAction<T>(path: string, data: any): Promise<IResponse<T>> {
     const res = await Create(path, data)
 
     if (res.data) {
-        return { status: true }
+        return { status: true, data: res.data }
     }
     return { status: false, message: res?.message }
 }

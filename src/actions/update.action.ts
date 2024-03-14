@@ -1,17 +1,16 @@
 'use server'
 
 import { Update } from "@/apis/update.api"
-interface IResponse {
-    status: boolean,
-    message?: string[] | string
-}
+import { IResponse } from "@/types/response.interface"
+import { revalidateTag } from "next/cache"
 
-export default async function updateAction(path: string, _id: string | null, data: any): Promise<IResponse> {
+export default async function updateAction<T>(path: string, _id: string | null, data: any): Promise<IResponse<T>> {
     if (_id) {
         const res = await Update(path, _id, data)
 
         if (res.data) {
-            return { status: true }
+            revalidateTag('student')
+            return { status: true, data: res.data }
         }
         return { status: false, message: res?.message }
     }

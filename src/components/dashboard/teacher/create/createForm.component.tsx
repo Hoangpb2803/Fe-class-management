@@ -8,6 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 import createAction from "@/actions/create.action";
 import { teacherSchema } from "@/validation/teacher.validation";
 import { getAllCache } from "@/caches/getAll.cache";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface IMajor {
     _id: string;
@@ -15,7 +17,6 @@ interface IMajor {
 }
 
 export default function CreateTeacherForm({ handleClose }: { handleClose: () => void }) {
-    const [majors, setMajors] = React.useState<IMajor[]>([]);
     const [formState, setFormState] = React.useState({
         name: "",
         dateOfBirth: format(new Date(2000, 2, 28), "yyyy-MM-dd"),
@@ -32,14 +33,7 @@ export default function CreateTeacherForm({ handleClose }: { handleClose: () => 
         email: "",
     });
 
-    React.useEffect(() => {
-        const fetchCache = async () => {
-            const res = await getAllCache("major");
-            if (res.data) setMajors(res.data);
-        };
-
-        fetchCache();
-    }, []);
+    const majors = useSelector((state: RootState) => state.major.majors) as IMajor[];
 
     const onBlur = (
         e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>

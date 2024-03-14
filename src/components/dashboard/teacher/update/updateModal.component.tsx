@@ -3,7 +3,11 @@
 import updateAction from "@/actions/update.action";
 import { getAllCache } from "@/caches/getAll.cache";
 import { getDetailCache } from "@/caches/getDetail.cache";
+import { updateTeacher } from "@/redux/slices/teacher.slice";
+import { RootState } from "@/redux/store";
+import { modalStyle } from "@/styles/modal.style";
 import { IMajor } from "@/types/major.interface";
+import { ITeacher } from "@/types/teacher.interface";
 import { teacherSchema } from "@/validation/teacher.validation";
 import {
     Box,
@@ -15,22 +19,11 @@ import {
     Typography,
 } from "@mui/material";
 import { format } from "date-fns";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-
-const style = {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 500,
-    bgcolor: "background.paper",
-    border: "1px solid #000",
-    borderRadius: "5px",
-    boxShadow: 24,
-    p: 4,
-};
 
 interface IProps {
     open: boolean;
@@ -40,7 +33,6 @@ interface IProps {
 export default function UpdateTeacherModal({ open, handleClose }: IProps) {
     const searchParams = useSearchParams();
     const _id = searchParams.get("_id");
-    const [majors, setMajors] = React.useState<IMajor[]>([]);
 
     const [formState, setFormState] = React.useState({
         name: "",
@@ -58,31 +50,25 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
         email: "",
     });
 
-    React.useEffect(() => {
-        const fetchCache = async () => {
-            const res = await getAllCache("major");
-            if (res.data) setMajors(res.data);
-        };
-        fetchCache();
-    }, []);
+    const dispatch = useDispatch();
+
+    const majors = useSelector((state: RootState) => state.major.majors) as IMajor[];
+    const teachers = useSelector(
+        (state: RootState) => state.teacher.teachers
+    ) as ITeacher[];
 
     React.useEffect(() => {
-        const teacherDetail = async () => {
-            if (_id) {
-                const res = await getDetailCache("teacher", _id);
-                const teacher = res.data;
-
-                if (teacher) {
-                    setFormState({
-                        ...teacher,
-                        dateOfBirth: format(new Date(teacher.dateOfBirth), "yyyy-MM-dd"),
-                    });
-                }
+        if (_id) {
+            const teacher = teachers.find((teacher) => teacher._id === _id);
+            if (teacher) {
+                setFormState({
+                    ...teacher,
+                    dateOfBirth: format(new Date(teacher.dateOfBirth), "yyyy-MM-dd"),
+                    major: teacher.major._id,
+                });
             }
-        };
-
-        teacherDetail();
-    }, [_id]);
+        }
+    }, [_id, teachers]);
 
     const onBlur = (
         e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
@@ -138,9 +124,11 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
                 email: zodErrors.email ? zodErrors.email[0] : "",
             });
         } else {
-            const res = await updateAction(`teacher`, _id, data);
-            if (res.status) {
+            const res = await updateAction<ITeacher>(`teacher`, _id, data);
+            if (res.status && res.data) {
                 toast.success("Teacher has been successfully updated!");
+                dispatch(updateTeacher(res.data));
+                // revalidatePath("dashboard/teacher");
                 handleClose();
             } else {
                 Array.isArray(res.message)
@@ -157,7 +145,7 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
         >
-            <Box sx={style}>
+            <Box sx={modalStyle}>
                 <form action={onClickUpdate}>
                     <Stack spacing={3} alignItems={"center"}>
                         <Typography

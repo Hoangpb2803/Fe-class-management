@@ -1,4 +1,5 @@
-export interface IResponse {
+export interface IResponse<T> {
     status: boolean,
+    data?: T
     message?: string[] | string
 }

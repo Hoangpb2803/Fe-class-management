@@ -4,7 +4,7 @@ export const GetAll = async (path: string) => {
     try {
         const res = await fetch(process.env.URL_API + path, {
             headers: { ...headers },
-            next: { tags: [path] }
+            cache: "no-store"
         })
         return await res.json()
     } catch (error) {

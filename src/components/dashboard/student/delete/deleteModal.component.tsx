@@ -1,8 +1,11 @@
 import deleteAction from "@/actions/delete.action";
+import { deleteStudent, setStudent } from "@/redux/slices/student.slice";
 import { modalStyle } from "@/styles/modal.style";
+import { IStudent } from "@/types/student.interface";
 import { Box, Button, Modal, Stack, Typography } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
+import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
 interface IProps {
@@ -15,12 +18,16 @@ export default function DeleteStudentModal({ open, handleClose }: IProps) {
     const _id = searchParams.get("_id");
     const name = searchParams.get("name");
 
+    const dispatch = useDispatch();
+
     const onClickDelete = async () => {
         if (_id) {
-            const res = await deleteAction("student", _id);
+            const res = await deleteAction<IStudent>("student", _id);
             handleClose();
-            if (res.status) {
+            if (res.status && res.data) {
                 toast.success("Student has been successfully deleted!");
+                dispatch(setStudent(res.data));
+                dispatch(deleteStudent());
             } else {
                 toast.error("Something went wrong!");
             }
