@@ -1,12 +1,15 @@
 "use client";
 
 import updateAction from "@/actions/update.action";
-import { updateTeacher } from "@/redux/slices/teacher.slice";
+import { getAllCache } from "@/caches/getAll.cache";
+import { getDetailCache } from "@/caches/getDetail.cache";
+import { levels } from "@/constants/fixedValue.constant";
+import { updateStudent } from "@/redux/slices/student.slice";
 import { RootState } from "@/redux/store";
 import { modalStyle } from "@/styles/modal.style";
 import { IMajor } from "@/types/major.interface";
-import { ITeacher } from "@/types/teacher.interface";
-import { teacherSchema } from "@/validation/teacher.validation";
+import { IStudent } from "@/types/student.interface";
+import { studentSchema } from "@/validation/student.validation";
 import {
     Box,
     Button,
@@ -17,6 +20,7 @@ import {
     Typography,
 } from "@mui/material";
 import { format } from "date-fns";
+import { revalidateTag } from "next/cache";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,15 +31,16 @@ interface IProps {
     handleClose: () => void;
 }
 
-export default function UpdateTeacherModal({ open, handleClose }: IProps) {
+export default function UpdateStudentModal({ open, handleClose }: IProps) {
     const searchParams = useSearchParams();
     const _id = searchParams.get("_id");
 
+    const [name, setName] = React.useState("");
     const [formState, setFormState] = React.useState({
         name: "",
         dateOfBirth: "",
         major: "",
-        exp: 1,
+        level: "",
         email: "",
     });
 
@@ -43,42 +48,47 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
         name: "",
         dateOfBirth: "",
         major: "",
-        exp: "",
+        level: "",
         email: "",
     });
 
     const dispatch = useDispatch();
 
     const majors = useSelector((state: RootState) => state.major.majors) as IMajor[];
-    const teachers = useSelector(
-        (state: RootState) => state.teacher.teachers
-    ) as ITeacher[];
+
+    const students = useSelector(
+        (state: RootState) => state.student.students
+    ) as IStudent[];
 
     React.useEffect(() => {
         if (_id) {
-            const teacher = teachers.find((teacher) => teacher._id === _id);
-            if (teacher) {
+            const student = students.find((student) => student._id === _id);
+            if (student) {
+                setName(student.name);
                 setFormState({
-                    ...teacher,
-                    dateOfBirth: format(new Date(teacher.dateOfBirth), "yyyy-MM-dd"),
-                    major: teacher.major._id,
+                    ...student,
+                    dateOfBirth: format(new Date(student.dateOfBirth), "yyyy-MM-dd"),
+                    major: student.major._id,
                 });
             }
         }
-    }, [_id, teachers]);
+    }, [_id, students]);
 
     const onBlur = (
         e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement, Element>
     ) => {
         const { name, value } = e.target;
 
-        const validatedFields = teacherSchema.safeParse({
+        // handle validate bu zod
+        const validatedFields = studentSchema.safeParse({
             [name]: name === "dateOfBirth" ? new Date(value) : value,
         });
 
         if (!validatedFields.success) {
+            // get error from zod
             const zodErrors = validatedFields.error.flatten().fieldErrors;
             const fieldErrors = zodErrors[name as keyof typeof zodErrors];
+
             setErrors({
                 ...errors,
                 [name]: fieldErrors && fieldErrors[0],
@@ -105,11 +115,12 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
             name: formData.get("name"),
             dateOfBirth: new Date(String(formData.get("dateOfBirth"))),
             major: formData.get("major"),
-            exp: Number(formData.get("exp")),
+            level: formData.get("level"),
             email: formData.get("email"),
         };
 
-        const validatedFields = teacherSchema.safeParse(data);
+        // handle validate by zod
+        const validatedFields = studentSchema.safeParse(data);
 
         if (!validatedFields.success) {
             const zodErrors = validatedFields.error.flatten().fieldErrors;
@@ -117,15 +128,14 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
                 name: zodErrors.name ? zodErrors.name[0] : "",
                 dateOfBirth: zodErrors.dateOfBirth ? zodErrors.dateOfBirth[0] : "",
                 major: zodErrors.major ? zodErrors.major[0] : "",
-                exp: zodErrors.exp ? zodErrors.exp[0] : "",
+                level: zodErrors.level ? zodErrors.level[0] : "",
                 email: zodErrors.email ? zodErrors.email[0] : "",
             });
         } else {
-            const res = await updateAction<ITeacher>(`teacher`, _id, data);
+            const res = await updateAction<IStudent>("student", _id, data);
             if (res.status && res.data) {
-                toast.success("Teacher has been successfully updated!");
-                dispatch(updateTeacher(res.data));
-                // revalidatePath("dashboard/teacher");
+                toast.success("Student has been successfully updated!");
+                dispatch(updateStudent({ ...res.data }));
                 handleClose();
             } else {
                 Array.isArray(res.message)
@@ -151,7 +161,7 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
                             component="h2"
                             color={"CaptionText"}
                         >
-                            Update <strong>{formState.name}</strong> infomation
+                            Update <strong>{name}</strong> infomation
                         </Typography>
 
                         <Stack direction={"row"} spacing={2}>
@@ -184,16 +194,23 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
                                 />
 
                                 <TextField
-                                    name="exp"
-                                    label="Experience"
+                                    name="level"
+                                    label="Level"
+                                    select
                                     fullWidth
                                     margin="normal"
-                                    value={formState.exp}
+                                    value={formState.level}
                                     onBlur={onBlur}
                                     onChange={onChange}
-                                    error={errors.exp ? true : false}
-                                    helperText={errors.exp}
-                                />
+                                    error={errors.level ? true : false}
+                                    helperText={errors.level}
+                                >
+                                    {levels.map((option) => (
+                                        <MenuItem key={option} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
                             </Box>
                             <Box width={"50%"}>
                                 <TextField
@@ -233,7 +250,12 @@ export default function UpdateTeacherModal({ open, handleClose }: IProps) {
                             </Box>
                         </Stack>
 
-                        <Stack direction={"row"} spacing={2} justifyContent={"flex-end"}>
+                        <Stack
+                            width={"100%"}
+                            direction={"row"}
+                            spacing={2}
+                            justifyContent={"flex-end"}
+                        >
                             <Button
                                 variant="contained"
                                 color="primary"

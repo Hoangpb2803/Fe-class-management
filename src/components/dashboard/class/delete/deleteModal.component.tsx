@@ -1,19 +1,19 @@
 import deleteAction from "@/actions/delete.action";
-import { deleteTeacher, setTeacher } from "@/redux/slices/teacher.slice";
+import { deleteClass, setClass } from "@/redux/slices/class.slice";
+import { modalStyle } from "@/styles/modal.style";
+import { IClass } from "@/types/class.interface";
 import { Box, Button, Modal, Stack, Typography } from "@mui/material";
 import { useSearchParams } from "next/navigation";
-import { modalStyle } from "@/styles/modal.style";
 import * as React from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { ITeacher } from "@/types/teacher.interface";
 
 interface IProps {
     open: boolean;
     handleClose: () => void;
 }
 
-export default function DeleteTeacherModal({ open, handleClose }: IProps) {
+export default function DeleteClassModal({ open, handleClose }: IProps) {
     const searchParams = useSearchParams();
     const _id = searchParams.get("_id");
     const name = searchParams.get("name");
@@ -22,12 +22,12 @@ export default function DeleteTeacherModal({ open, handleClose }: IProps) {
 
     const onClickDelete = async () => {
         if (_id) {
-            const res = await deleteAction<ITeacher>("teacher", _id);
+            const res = await deleteAction<IClass>("class", _id);
             handleClose();
             if (res.status && res.data) {
-                toast.success("Teacher has been successfully deleted!");
-                dispatch(setTeacher(res.data));
-                dispatch(deleteTeacher(_id));
+                toast.success("Class has been successfully deleted!");
+                dispatch(setClass(res.data));
+                dispatch(deleteClass());
             } else {
                 toast.error("Something went wrong!");
             }
@@ -50,7 +50,7 @@ export default function DeleteTeacherModal({ open, handleClose }: IProps) {
                         textAlign={"center"}
                         color={"red"}
                     >
-                        Do you want to delete teacher {`"${name}"`} ?
+                        Do you want to delete class {`"${name}"`} ?
                     </Typography>
                     <Stack direction={"row"} spacing={2} justifyContent={"flex-end"}>
                         <Button variant="contained" color="primary" onClick={handleClose}>

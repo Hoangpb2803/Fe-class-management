@@ -16,9 +16,9 @@ import UpdateTeacherModal from "./update/updateModal.component";
 import { useDispatch, useSelector } from "react-redux";
 import { getPaginationCache } from "@/caches/getPagination";
 import { setTeacher } from "@/redux/slices/teacher.slice";
-import { getAllCache } from "@/caches/getAll.cache";
 import { RootState } from "@/redux/store";
 import { IUrlParams } from "@/types/urlParam.interface";
+import { getNumberCache } from "@/caches/getNumber.cache";
 
 export default function TeacherTable() {
     const router = useRouter();
@@ -60,7 +60,7 @@ export default function TeacherTable() {
 
     useEffect(() => {
         const teacherFetch = async () => {
-            const res = await getAllCache("teacher");
+            const res = await getNumberCache("teacher");
             if (res.data) setNumberTeacher(res.data);
         };
 

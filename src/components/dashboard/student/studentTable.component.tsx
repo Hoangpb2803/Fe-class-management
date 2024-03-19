@@ -13,13 +13,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import DeleteStudentModal from "./delete/deleteModal.component";
 import UpdateStudentModal from "./update/updateModal.component";
-import { toast } from "react-toastify";
 import { getPaginationCache } from "@/caches/getPagination";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setStudent } from "@/redux/slices/student.slice";
-import { getAllCache } from "@/caches/getAll.cache";
 import { IUrlParams } from "@/types/urlParam.interface";
+import { getNumberCache } from "@/caches/getNumber.cache";
 
 export default function StudentTable() {
     const router = useRouter();
@@ -61,7 +60,7 @@ export default function StudentTable() {
 
     useEffect(() => {
         const studentFetch = async () => {
-            const res = await getAllCache("student");
+            const res = await getNumberCache("student");
             if (res.data) setNumberStudent(res.data);
         };
 
